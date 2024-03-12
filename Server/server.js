@@ -22,8 +22,7 @@ app.post('/wifi-settings', (req, res) => {
         console.error(`Error executing WiFi settings script: ${error}`);
         res.status(500).send('Error updating WiFi settings');
       } else {
-        console.log(`WiFi settings script output: ${stdout}`);
-        res.status(200).send('WiFi settings updated successfully');
+        res.send('WiFiYes');
       }
     });
   } else {
@@ -38,7 +37,7 @@ app.post('/wifi-settings/reset', (req, res) => {
       res.status(500).send('Error resetting WiFi settings');
     } else {
       console.log(`WiFi reset script output: ${stdout}`);
-      res.status(200).send('WiFi settings reset successfully');
+      res.send('WiFiSet');
     }
   });
 });

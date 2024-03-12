@@ -28,18 +28,23 @@ const Wifi = () => {
 
   const handleReset = async () => {
     try {
-      await axios.post('http://localhost:3001/wifi-settings/reset');
+      const resp = await axios.post('http://localhost:3001/wifi-settings/reset');
+      if(resp.data === "WiFiSet"){
+        alert("Wifi Reset Successful! Please Reboot")
+      }
     } catch (error) {
-      console.error('Error resetting WiFi settings:', error);
+      alert('Error resetting WiFi settings:', error);
     }
   };
 
   const handleSave = async () => {
     try {
       const response = await axios.post('http://localhost:3001/wifi-settings', { ssid, password, channel });
-      console.log(response.data);
+      if(response.data === "WiFiYes"){
+        alert("Please Reboot")
+      }
     } catch (error) {
-      console.error('Error saving WiFi settings:', error);
+      alert('Error saving WiFi settings:', error);
     }
   };
   
