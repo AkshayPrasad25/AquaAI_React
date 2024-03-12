@@ -80,7 +80,6 @@ app.post('/restart', (req, res) => {
 
 app.get('/analytics', (req, res) => {
   const csvFilePath = '/home/akshay/Downloads/data.csv';
-
   const jsonData = [];
   fs.createReadStream(csvFilePath)
     .pipe(csv())
@@ -95,7 +94,6 @@ app.get('/analytics', (req, res) => {
       res.status(500).send('Error reading and parsing CSV file');
     });
 });
-
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));

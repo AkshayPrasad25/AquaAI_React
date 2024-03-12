@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-// import * as d3 from 'd3';
 import './analytic.css'
 import { TbGridDots } from "react-icons/tb";
 import { TbDeviceAnalytics } from "react-icons/tb";
@@ -10,19 +9,15 @@ import { FaGlobe } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
-
 const AnalyticData = () => {
   const chartRefs = useRef([]);
   const [uptime, setUptime] = useState("Loading...");
 
-  
 // eslint-disable-next-line
   const fetchDataAndUpdateCharts = async (csvFilePath) => {
     try {
       const response = await axios.get('http://localhost:3001/analytics');
       const jsonData = response.data;
-      console.log(jsonData)
-
       updateChart('soilChart', 'Soil_Moisture', 'Soil Moisture', 'rgba(105, 89, 62, 1)', jsonData);
       updateChart('temperatureChart', 'Temperature', 'Temperature', 'rgba(255, 99, 132, 1)', jsonData);
       updateChart('humidityChart', 'Humidity', 'Humidity', 'rgba(255, 99, 71, 1)', jsonData);
@@ -36,7 +31,6 @@ const AnalyticData = () => {
   };
   useEffect(() => {
     const csvFilePath = 'data.csv';
-
     fetchDataAndUpdateCharts(csvFilePath);
 
     const intervalId = setInterval(() => {
@@ -120,6 +114,7 @@ const AnalyticData = () => {
       });
     }
   };
+  
   const fetchUptime = async () => {
     try {
       const response = await axios.get('http://localhost:3001/uptime');

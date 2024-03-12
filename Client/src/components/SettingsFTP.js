@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 import './system.css'
 import { TbGridDots } from "react-icons/tb";
 import { TbDeviceAnalytics } from "react-icons/tb";
@@ -29,6 +29,7 @@ const SettingsSystem = () => {
     const handleRestart = () => {
       executeCommand('restart');
     };
+
     const fetchUptime = async () => {
       try {
         const response = await axios.get('http://localhost:3001/uptime');

@@ -73,6 +73,7 @@
     background: linear-gradient(to top, rgb(161, 140, 209) 0%, rgb(161, 140, 209) 100%);
     cursor: pointer;
 }
+
 .select {
     position: relative;
     display: flex;
@@ -81,6 +82,7 @@
     border-radius: 14px;
     overflow: hidden;
 }
+
 .select::after {
     content: '\25BC';
     position: absolute;
@@ -94,6 +96,7 @@
     color: white;
     font-size: 13px;
 }
+
 .select:hover::after {
     color: white;
 }

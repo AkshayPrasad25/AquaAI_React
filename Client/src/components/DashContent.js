@@ -8,7 +8,6 @@ import { FaGlobe } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
-
 const DashContent = () => {
   const [data, setData] = useState([]);
   const [totalWaterDispensed, setTotalWaterDispensed] = useState(0);

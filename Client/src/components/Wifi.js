@@ -109,7 +109,6 @@ const Wifi = () => {
                 <button className='btn-sys' onClick={handleSave}>Save</button>
               </div>
             </div>
-            
           </div>
         </div>
       </div>
