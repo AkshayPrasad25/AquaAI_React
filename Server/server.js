@@ -55,7 +55,7 @@ app.post('/shutdown', (req, res) => {
 });
 
 app.get('/uptime', (req, res) => {
-  exec("uptime | awk '{print $3 $4}' | sed 's/.$//'", (error, stdout, stderr) => {
+  exec("uptime | awk '{print $3 \" \" $4}' | sed 's/,.*$//'", (error, stdout, stderr) => {
     if (error) {
       console.error(`Error getting uptime: ${error}`);
       res.status(500).send('Error getting uptime');
