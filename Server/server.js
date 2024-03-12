@@ -5,9 +5,43 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const app = express();
 const port = 3001;
+const bodyParser = require('body-parser');
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
+
+app.post('/wifi-settings', (req, res) => {
+  const { ssid, password, channel } = req.body;
+  const channelToUse = channel || '7';
+
+  if (ssid && password) {
+    const command = `sudo bash /home/pi/Scripts/cngWifi.sh ${ssid} ${password} ${channelToUse}`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error executing WiFi settings script: ${error}`);
+        res.status(500).send('Error updating WiFi settings');
+      } else {
+        console.log(`WiFi settings script output: ${stdout}`);
+        res.status(200).send('WiFi settings updated successfully');
+      }
+    });
+  } else {
+    res.status(400).send('Invalid WiFi settings');
+  }
+});
+
+app.post('/wifi-settings/reset', (req, res) => {
+  exec('sudo cp /etc/hostapd/hostapd.conf.orig /etc/hostapd/hostapd.conf', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing WiFi reset script: ${error}`);
+      res.status(500).send('Error resetting WiFi settings');
+    } else {
+      console.log(`WiFi reset script output: ${stdout}`);
+      res.status(200).send('WiFi settings reset successfully');
+    }
+  });
+});
 
 app.post('/shutdown', (req, res) => {
   exec('sudo poweroff', (error, stdout, stderr) => {

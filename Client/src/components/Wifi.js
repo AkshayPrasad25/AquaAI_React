@@ -11,6 +11,10 @@ import axios from 'axios'
 
 const Wifi = () => {
   const [uptime, setUptime] = useState("Loading...");
+  const [ssid, setSSID] = useState('');
+  const [password, setPassword] = useState('');
+  const [channel, setChannel] = useState('');
+
   const fetchUptime = async () => {
     try {
       const response = await axios.get('http://localhost:3001/uptime');
@@ -19,6 +23,23 @@ const Wifi = () => {
     } catch (error) {
       console.error('Error fetching uptime:', error);
       setUptime('Error');
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      await axios.post('http://localhost:3001/wifi-settings/reset');
+    } catch (error) {
+      console.error('Error resetting WiFi settings:', error);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.post('http://localhost:3001/wifi-settings', { ssid, password, channel });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error saving WiFi settings:', error);
     }
   };
   
@@ -52,15 +73,16 @@ const Wifi = () => {
             <div className='no-flex'>
               <div className='wifibox-flex'>
                 <h3 className='move'>SSID: </h3>
-                <input type='text' placeholder='Enter SSID' />
+                <input type='text' placeholder='Enter SSID' value={ssid} onChange={(e) => setSSID(e.target.value)}/>
               </div>
               <div className='wifibox-flex'>
                 <h3>Password: </h3>
-                <input type='text' placeholder='Enter Password' />
+                <input type='text' placeholder='Enter Password' value={password} onChange={(e) => setPassword(e.target.value)}/>
               </div>
               <div className='wifibox-flex'>
                 <h3>Channel: </h3>
-                  <select name="Channel" id="Channel">
+                  <select name='Channel' id='Channel' value={channel}
+                  onChange={(e) => setChannel(e.target.value)}>
                     <option value="Select Channel">Select Channel</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -78,8 +100,8 @@ const Wifi = () => {
                   </select>
               </div>
               <div className='wifibox-flex1'>
-                <button className='btn-sys'>Reset</button>
-                <button className='btn-sys'>Save</button>
+                <button className='btn-sys' onClick={handleReset}>Reset</button>
+                <button className='btn-sys' onClick={handleSave}>Save</button>
               </div>
             </div>
             
