@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import * as d3 from 'd3';
+// import * as d3 from 'd3';
 import './analytic.css'
 import { TbGridDots } from "react-icons/tb";
 import { TbDeviceAnalytics } from "react-icons/tb";
@@ -8,19 +8,19 @@ import { MdOutlineAppSettingsAlt } from "react-icons/md";
 import { FaWifi } from "react-icons/fa";
 import { FaGlobe } from "react-icons/fa";
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 
 const AnalyticData = () => {
   const chartRefs = useRef([]);
+  const [uptime, setUptime] = useState("Loading...");
 
   
 // eslint-disable-next-line
   const fetchDataAndUpdateCharts = async (csvFilePath) => {
     try {
-      const response = await fetch(csvFilePath);
-      const csvData = await response.text();
-
-      const jsonData = d3.csvParse(csvData);
+      const response = await axios.get('http://localhost:3001/analytics');
+      const jsonData = response.data;
       console.log(jsonData)
 
       updateChart('soilChart', 'Soil_Moisture', 'Soil Moisture', 'rgba(105, 89, 62, 1)', jsonData);
@@ -120,6 +120,26 @@ const AnalyticData = () => {
       });
     }
   };
+  const fetchUptime = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/uptime');
+      const uptimeString = response.data;
+      setUptime(uptimeString);
+    } catch (error) {
+      console.error('Error fetching uptime:', error);
+      setUptime('Error');
+    }
+  };
+  
+  useEffect(() => {
+    const uptimeIntervalId = setInterval(() => {
+      fetchUptime();
+    }, 1000); // Refresh uptime every 1 second
+
+    return () => {
+      clearInterval(uptimeIntervalId);
+    };
+  }, []);
 
   return (
     <div className='analytic-wrapper'>
@@ -132,7 +152,7 @@ const AnalyticData = () => {
             <li><Link to='/system-settings'><MdOutlineAppSettingsAlt />System Settings</Link></li>
             <li><Link to='/wifi-settings'><FaWifi />Wifi Settings</Link></li>
           </ul>
-          <h2 className='sys-up'><FaGlobe />Uptime: 45mins</h2>
+          <h2 className='sys-up'><FaGlobe />Uptime: {uptime}</h2>
         </div>
       </div>
       <div className='analytic-cover'>

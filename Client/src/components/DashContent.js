@@ -6,7 +6,8 @@ import { MdOutlineAppSettingsAlt } from "react-icons/md";
 import { FaWifi } from "react-icons/fa";
 import { FaGlobe } from "react-icons/fa";
 import { Link } from 'react-router-dom';
-import * as d3 from 'd3';
+import axios from 'axios';
+
 
 const DashContent = () => {
   const [data, setData] = useState([]);
@@ -15,17 +16,14 @@ const DashContent = () => {
   const [currentNPK, setCurrentNPK] = useState({});
   const [currentTemperature, setCurrentTemperature] = useState(0);
   const [currentHumidity, setCurrentHumidity] = useState(0);
+  const [uptime, setUptime] = useState("Loading...");
 
   useEffect(() => {
-    // Function to fetch and process CSV data using D3
     const fetchData = async () => {
       try {
-        const response = await fetch('./data.csv');
-        const csvData = await response.text();
-        const parsedData = d3.csvParse(csvData);
-        if (JSON.stringify(parsedData) !== JSON.stringify(data)) {
-          setData(parsedData);
-        }
+        const response = await axios.get('http://localhost:3001/analytics');
+        const jsonData = response.data;
+        setData(jsonData);
       } catch (error) {
         console.error('Error fetching or processing data:', error);
       }
@@ -34,6 +32,27 @@ const DashContent = () => {
     const intervalId = setInterval(fetchData, 10000); // Refresh data every 10 seconds
     return () => clearInterval(intervalId);
   }, [data]);
+  
+  const fetchUptime = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/uptime');
+      const uptimeString = response.data;
+      setUptime(uptimeString);
+    } catch (error) {
+      console.error('Error fetching uptime:', error);
+      setUptime('Error');
+    }
+  };
+  
+  useEffect(() => {
+    const uptimeIntervalId = setInterval(() => {
+      fetchUptime();
+    }, 1000); // Refresh uptime every 1 second
+
+    return () => {
+      clearInterval(uptimeIntervalId);
+    };
+  }, []);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -63,7 +82,7 @@ const DashContent = () => {
             <li><Link to='/system-settings'><MdOutlineAppSettingsAlt />System Settings</Link></li>
             <li><Link to='/wifi-settings'><FaWifi />Wifi Settings</Link></li>
           </ul>
-          <h2 className='sys-up'><FaGlobe />Uptime: 45mins</h2>
+          <h2 className='sys-up'><FaGlobe />Uptime: {uptime}</h2>
         </div>
       </div>
       <div className="dash-cover">

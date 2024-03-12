@@ -1,4 +1,5 @@
 import React from 'react'
+import { useEffect,useState } from 'react';
 import './system.css'
 import { TbGridDots } from "react-icons/tb";
 import { TbDeviceAnalytics } from "react-icons/tb";
@@ -11,6 +12,7 @@ import { MdOutlineRestartAlt } from "react-icons/md";
 import axios from 'axios';
 
 const SettingsSystem = () => {
+  const [uptime, setUptime] = useState("Loading...");
     const executeCommand = async (command) => {
       try {
         const response = await axios.post(`http://localhost:3001/${command}`);
@@ -27,6 +29,26 @@ const SettingsSystem = () => {
     const handleRestart = () => {
       executeCommand('restart');
     };
+    const fetchUptime = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/uptime');
+        const uptimeString = response.data;
+        setUptime(uptimeString);
+      } catch (error) {
+        console.error('Error fetching uptime:', error);
+        setUptime('Error');
+      }
+    };
+    
+    useEffect(() => {
+      const uptimeIntervalId = setInterval(() => {
+        fetchUptime();
+      }, 1000); // Refresh uptime every 1 second
+  
+      return () => {
+        clearInterval(uptimeIntervalId);
+      };
+    }, []);
 
   return (
     <div className='sys-wrapper'>
@@ -39,7 +61,7 @@ const SettingsSystem = () => {
             <li><Link to='/system-settings'><MdOutlineAppSettingsAlt />System Settings</Link></li>
             <li><Link to='/wifi-settings'><FaWifi />Wifi Settings</Link></li>
           </ul>
-          <h2 className='sys-up'><FaGlobe />Uptime: 45mins</h2>
+          <h2 className='sys-up'><FaGlobe />Uptime: {uptime}</h2>
         </div>
       </div>
       <div className='sys-cover'>
