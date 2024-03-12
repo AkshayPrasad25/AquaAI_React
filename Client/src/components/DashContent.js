@@ -35,8 +35,8 @@ const DashContent = () => {
   const fetchUptime = async () => {
     try {
       const response = await axios.get('http://localhost:3001/uptime');
-      const uptimeString = response.data;
-      setUptime(uptimeString);
+      const uptimestr = response.data;
+      setUptime(uptimestr);
     } catch (error) {
       console.error('Error fetching uptime:', error);
       setUptime('Error');

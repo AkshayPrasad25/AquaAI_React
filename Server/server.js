@@ -19,8 +19,8 @@ app.post('/wifi-settings', (req, res) => {
     const command = `sudo bash /home/pi/Scripts/cngWifi.sh ${ssid} ${password} ${channelToUse}`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error executing WiFi settings script: ${error}`);
-        res.status(500).send('Error updating WiFi settings');
+        console.error(`Error in WiFi settings script!!: ${error}`);
+        res.status(500).send('Error updating WiFi settings!!');
       } else {
         res.send('WiFiYes');
       }
@@ -33,10 +33,10 @@ app.post('/wifi-settings', (req, res) => {
 app.post('/wifi-settings/reset', (req, res) => {
   exec('sudo cp /etc/hostapd/hostapd.conf.orig /etc/hostapd/hostapd.conf', (error, stdout, stderr) => {
     if (error) {
-      console.error(`Error executing WiFi reset script: ${error}`);
-      res.status(500).send('Error resetting WiFi settings');
+      console.error(`Error in WiFi reset script!!: ${error}`);
+      res.status(500).send('Error in resetting WiFi settings!!');
     } else {
-      console.log(`WiFi reset script output: ${stdout}`);
+      console.log(`WiFi reset output: ${stdout}`);
       res.send('WiFiSet');
     }
   });
@@ -46,10 +46,10 @@ app.post('/shutdown', (req, res) => {
   exec('sudo poweroff', (error, stdout, stderr) => {
     if (error) {
       console.error(`Error executing command: ${error}`);
-      res.status(500).send('Error during shutdown');
+      res.status(500).send('Error in shutdown!!');
     } else {
       console.log(`Command output: ${stdout}`);
-      res.status(200).send('Shutdown command executed successfully');
+      res.status(200).send('Shutdown executed!!');
     }
   });
 });
@@ -57,8 +57,8 @@ app.post('/shutdown', (req, res) => {
 app.get('/uptime', (req, res) => {
   exec("uptime | awk '{print $3 \" \" $4}' | sed 's/,.*$//'", (error, stdout, stderr) => {
     if (error) {
-      console.error(`Error getting uptime: ${error}`);
-      res.status(500).send('Error getting uptime');
+      console.error(`Error fetching uptime: ${error}`);
+      res.status(500).send('Error fetching uptime!!');
     } else {
       const uptime = stdout.trim();
       res.status(200).send(uptime);
@@ -69,11 +69,11 @@ app.get('/uptime', (req, res) => {
 app.post('/restart', (req, res) => {
   exec('sudo reboot', (error, stdout, stderr) => {
     if (error) {
-      console.error(`Error executing command: ${error}`);
-      res.status(500).send('Error during restart');
+      console.error(`Error in command: ${error}`);
+      res.status(500).send('Error while restarting!!');
     } else {
       console.log(`Command output: ${stdout}`);
-      res.status(200).send('Restart command executed successfully');
+      res.status(200).send('Restart executed!!');
     }
   });
 });
@@ -90,8 +90,8 @@ app.get('/analytics', (req, res) => {
       res.status(200).json(jsonData);
     })
     .on('error', (error) => {
-      console.error('Error reading and parsing CSV file:', error);
-      res.status(500).send('Error reading and parsing CSV file');
+      console.error('Error while reading/parsing CSV file:', error);
+      res.status(500).send('Error while reading/parsing CSV file!!');
     });
 });
 
@@ -100,5 +100,5 @@ app.get('*', (req, res) => {
   });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });

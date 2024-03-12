@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const AnalyticData = () => {
-  const chartRefs = useRef([]);
+  const chartRef = useRef([]);
   const [uptime, setUptime] = useState("Loading...");
 
 // eslint-disable-next-line
@@ -54,11 +54,11 @@ const AnalyticData = () => {
     const canvas = document.getElementById(containerId);
     if (canvas) {
       const ctx = canvas.getContext('2d');
-      if (chartRefs.current[containerId]) {
-        chartRefs.current[containerId].destroy();
+      if (chartRef.current[containerId]) {
+        chartRef.current[containerId].destroy();
       }
 
-      chartRefs.current[containerId] = new Chart(ctx, {
+      chartRef.current[containerId] = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
@@ -118,8 +118,8 @@ const AnalyticData = () => {
   const fetchUptime = async () => {
     try {
       const response = await axios.get('http://localhost:3001/uptime');
-      const uptimeString = response.data;
-      setUptime(uptimeString);
+      const uptimestr = response.data;
+      setUptime(uptimestr);
     } catch (error) {
       console.error('Error fetching uptime:', error);
       setUptime('Error');
