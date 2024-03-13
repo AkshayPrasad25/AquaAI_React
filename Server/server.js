@@ -95,6 +95,42 @@ app.get('/analytics', (req, res) => {
     });
 });
 
+app.get('/crop-data/:cropName', (req, res) => {
+  const csvFilePath = '/home/akshay/Downloads/plants.csv';
+  const cropName = req.params.cropName;
+  let jsonData = null;
+
+  fs.createReadStream(csvFilePath)
+    .pipe(csv())
+    .on('data', (row) => {
+      if (row.Name === cropName) {
+        jsonData = {
+          Name: row.Name,
+          N: parseFloat(row.N),
+          P: parseFloat(row.P),
+          K: parseFloat(row.K),
+          SoilMin: parseFloat(row.SoilMin),
+          SoilMax: parseFloat(row.SoilMax),
+          TempMin: parseFloat(row.TempMin),
+          TempMax: parseFloat(row.TempMax),
+          HumidMin: parseFloat(row.HumidMin),
+          HumidMax: parseFloat(row.HumidMax),
+        };
+        return res.status(200).json(jsonData);
+      }
+    })
+    .on('end', () => {
+      if (!jsonData) {
+        return res.status(404).send('Crop not found');
+      }
+    })
+    .on('error', (error) => {
+      console.error('Error while reading/parsing CSV file!!', error);
+      res.status(500).send('Error while reading/parsing CSV file!!');
+    });
+});
+
+
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
   });

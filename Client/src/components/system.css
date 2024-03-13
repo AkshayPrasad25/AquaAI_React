@@ -73,7 +73,7 @@
 }
 
 .btn-sys {
-    background: linear-gradient(to top,rgb(251, 194, 235) 0%, rgb(161, 140, 209) 100%);
+    background: rgb(161, 140, 209);
     outline: none;
     border: none;
     width: 130px;
