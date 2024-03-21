@@ -8,6 +8,7 @@ import { FaWifi } from "react-icons/fa";
 import { FaGlobe } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import axios from 'axios'
+import { LuBrainCircuit } from "react-icons/lu";
 
 const Wifi = () => {
   const [uptime, setUptime] = useState("Loading...");
@@ -30,7 +31,7 @@ const Wifi = () => {
     try {
       const resp = await axios.post('http://localhost:3001/wifi-settings/reset');
       if(resp.data === "WiFiSet"){
-        alert("Wifi Reset Successful! Please Reboot")
+        alert("Wifi Reset Successful! Please Reboot");
       }
     } catch (error) {
       alert('Error resetting WiFi settings:', error);
@@ -65,6 +66,7 @@ const Wifi = () => {
           <ul>
             <li><Link to='/'><TbGridDots />Dashboard</Link></li>
             <li><Link to='/analytics'><TbDeviceAnalytics />Analytics</Link></li>
+            <li><Link to='/ai-recommendations'><LuBrainCircuit />AI Recommendations</Link></li>
             <li><Link to='/system-settings'><MdOutlineAppSettingsAlt />System Settings</Link></li>
             <li><Link to='/wifi-settings'><FaWifi />Wifi Settings</Link></li>
           </ul>

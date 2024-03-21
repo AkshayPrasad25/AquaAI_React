@@ -16,7 +16,7 @@ app.post('/wifi-settings', (req, res) => {
   const channelToUse = channel || '7';
 
   if (ssid && password) {
-    const command = `sudo bash /home/pi/Scripts/cngWifi.sh ${ssid} ${password} ${channelToUse}`;
+    const command = `sudo nohup bash /home/pi/Scripts/cngWifi.sh ${ssid} ${password} ${channelToUse}`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error in WiFi settings script!!: ${error}`);
@@ -79,7 +79,7 @@ app.post('/restart', (req, res) => {
 });
 
 app.get('/analytics', (req, res) => {
-  const csvFilePath = '/home/akshay/Downloads/data.csv';
+  const csvFilePath = '<YOUR_CSV_FILE_PATH>';
   const jsonData = [];
   fs.createReadStream(csvFilePath)
     .pipe(csv())
@@ -96,7 +96,7 @@ app.get('/analytics', (req, res) => {
 });
 
 app.get('/crop-data/:cropName', (req, res) => {
-  const csvFilePath = '/home/akshay/Downloads/plants.csv';
+  const csvFilePath = '<YOUR_CSV_FILE_PATH>';
   const cropName = req.params.cropName;
   let jsonData = null;
 
@@ -129,6 +129,131 @@ app.get('/crop-data/:cropName', (req, res) => {
       res.status(500).send('Error while reading/parsing CSV file!!');
     });
 });
+
+app.post('/executeCommand', (req, res) => {
+  const { command } = req.body;
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      res.status(500).json({ error: 'Error executing command' });
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
+    res.json({ message: 'Command executed successfully' });
+  });
+});
+
+app.get('/growth-data', (req, res) => {
+  const jsonData = [];
+  const csvAI = "<YOUR_CSV_FILE_PATH>"
+  fs.createReadStream(csvAI)
+    .pipe(csv())
+    .on('data', (row) => {
+      jsonData.push({
+        growthStage: row.growthStage,
+        targetMoist: row.targetMoist
+      });
+    })
+    .on('end', () => {
+      res.status(200).json(jsonData);
+    })
+    .on('error', (error) => {
+      console.error('Error while reading/parsing CSV file:', error);
+      res.status(500).send('Error while reading/parsing CSV file!!');
+    });
+});
+
+app.get('/image', (req, res) => {
+  const imagePath = '<YOUR_CSV_FILE_PATH>'; // Path to image change here
+  fs.readFile(imagePath, (err, data) => {
+    if (err) {
+      console.error('Error reading image:', err);
+      res.status(500).send('Error reading image');
+      return;
+    }
+    res.writeHead(200, {'Content-Type': 'image/jpeg'});
+    res.end(data);
+  });
+});
+
+app.post('/sys-info', (req, res) => {
+  const { command } = req.body;
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error in command: ${error}`);
+      res.status(500).json({ error: 'Error in command' });
+    } else {
+      res.status(200).json({ output: stdout });
+    }
+  });
+});
+
+app.post('/startcontinuousexecution', (req, res) => {
+  const { currentNPK, cropName } = req.body;
+  const csvFilePath = '<YOUR_CSV_FILE_PATH>';
+  let idealNPK = {};
+
+  fs.createReadStream(csvFilePath)
+    .pipe(csv())
+    .on('data', (row) => {
+      if (row.Name === cropName) {
+        idealNPK = {
+          N: parseFloat(row.N),
+          P: parseFloat(row.P),
+          K: parseFloat(row.K),
+        };
+      }
+    })
+    .on('end', () => {
+      const notIdeal = currentNPK.N < idealNPK.N || currentNPK.P < idealNPK.P || currentNPK.K < idealNPK.K;
+      if (notIdeal) {
+        const intervalId = setInterval(() => {
+          exec('python3 <YOUR_PYTHON_SCRIPT_PATH>', (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Error executing command: ${error}`);
+            } else {
+              console.log(`Command output: ${stdout}`);
+              // Check if ideal NPK values are reached
+              idealValuesReached(currentNPK, cropName, idealNPK, intervalId);
+            }
+          });
+        }, 60000); // Executes automation for every minute
+
+        res.send('Continuous execution started');
+      } else {
+        res.status(400).send('Current NPK values are ideal hence execution not done.');
+      }
+    })
+    .on('error', (error) => {
+      console.error('Error while reading/parsing CSV file:', error);
+      res.status(500).send('Error while reading/parsing CSV file!!');
+    });
+});
+
+const idealValuesReached = (currentNPK, cropName, idealNPK, intervalId) => {
+  const csvFilePath = '<YOUR_PLANT_CSV_FILE_PATH>';
+
+  fs.createReadStream(csvFilePath)
+    .pipe(csv())
+    .on('data', (row) => {
+      if (row.Name === cropName) {
+        // Comparing the current N, P, K values with ideal values
+        if (
+          currentNPK.N >= idealNPK.N &&
+          currentNPK.P >= idealNPK.P &&
+          currentNPK.K >= idealNPK.K
+        ) {
+          clearInterval(intervalId); // Stop continuous execution
+          console.log("Ideal NPK values reached. Stopping continuous execution.");
+        }
+      }
+    })
+    .on('error', (error) => {
+      console.error('Error while reading/parsing CSV file:', error);
+    });
+};
 
 
 app.get('*', (req, res) => {

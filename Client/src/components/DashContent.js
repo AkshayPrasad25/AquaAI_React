@@ -7,6 +7,7 @@ import { FaWifi } from "react-icons/fa";
 import { FaGlobe } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { LuBrainCircuit } from "react-icons/lu";
 
 const DashContent = () => {
   const [data, setData] = useState([]);
@@ -21,6 +22,7 @@ const DashContent = () => {
   const [nitrogenOp, setNitrogenOp] = useState(null);
   const [potassiumOp, setPotassiumOp] = useState(null);
   const [phosphorusOp, setPhosphorusOp] = useState(null);
+  const [selectedOption, setSelectedOption] = useState("Automatic");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,7 +100,6 @@ const DashContent = () => {
       });
     }
   }, [data]);
-  
 
   const fetchCropData = async (selectedCrop) => {
     try {
@@ -116,6 +117,46 @@ const DashContent = () => {
     setSelectedCrop(selectedCrop);
     fetchCropData(selectedCrop);
   };
+
+  const handleSelectChange = (event) => {
+    const selectedValue = event.target.value;
+    setSelectedOption(selectedValue);
+    if (selectedValue === 'Automatic') {
+      startContinuousExecution();
+    }
+  };
+  const handleDispenseClick = () => {
+    if (selectedOption === 'Manual') {
+      sendSignalToBackend();
+    }
+  };
+
+  const startContinuousExecution = () => {
+    axios.post('http://localhost:3001/startcontinuousexecution', {
+      currentNPK,
+      cropName: selectedCrop
+    })
+    .then(response => {
+      console.log(response.data);
+    })
+    .catch(error => {
+      console.error('Error starting continuous execution:', error);
+    });
+  };
+
+  const sendSignalToBackend = () => {
+    if (selectedOption === "Manual") {
+      axios.post('http://localhost:3001/executeCommand', {
+        command: 'python3 /home/pi/Scripts/fert.py'
+      })
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        console.error('Error:', error);
+      });
+    }
+  }
 
   useEffect(() => {
     compareNitrogenLevels(currentNPK, selectedCropData);
@@ -150,8 +191,6 @@ const DashContent = () => {
       setPotassiumOp(null);
     }
   };
-
-
   return (
     <div className='wrapper-dash'>
       <div className='nav-holder'>
@@ -160,6 +199,7 @@ const DashContent = () => {
           <ul>
             <li><Link to='/'><TbGridDots />Dashboard</Link></li>
             <li><Link to='/analytics'><TbDeviceAnalytics />Analytics</Link></li>
+            <li><Link to='/ai-recommendations'><LuBrainCircuit />AI Recommendations</Link></li>
             <li><Link to='/system-settings'><MdOutlineAppSettingsAlt />System Settings</Link></li>
             <li><Link to='/wifi-settings'><FaWifi />Wifi Settings</Link></li>
           </ul>
@@ -170,29 +210,59 @@ const DashContent = () => {
         <div className='dash-container'>
           <div className='head-space-between'>
             <h1>Dashboard</h1>
-            <div className='select'>
-              <select name="Crop" id="Crop" onChange={handleCropChange} value={selectedCrop}>
-                <option value="Select Crop">Select Crop</option>
-                <option value="Pomegranate">Pomegranate</option>
-                <option value="Tomato">Tomato</option>
-                <option value="Wheat">Wheat</option>
-                <option value="Brinjal">Brinjal</option>
-                <object value="Onion">Onion</object>
-                <option value="Cabbage">Cabbage</option>
-                <option value="Potato">Potato</option>
-              </select>
-            </div>
+            <div className='space-holder'>
+              <div className='select'>
+                <select name="Crop" id="Crop" onChange={handleCropChange} value={selectedCrop}>
+                  <option value="Select Crop">Select Crop</option>
+                  <option value="Pomegranate">Pomegranate</option>
+                  <option value="Tomato">Tomato</option>
+                  <option value="Wheat">Wheat</option>
+                  <option value="Brinjal">Brinjal</option>
+                  <object value="Onion">Onion</object>
+                  <option value="Cabbage">Cabbage</option>
+                  <option value="Potato">Potato</option>
+                </select>
+              </div>
+              <h1>Fertilizer:</h1>
+              <div className='select'>
+                <select name="Dispense" id="Dispense" value={selectedOption} onChange={handleSelectChange}>
+                  <option value="Automatic">Automatic</option>
+                  <option value="Manual">Manual</option>
+                </select>
+              </div>
+              <button className='btn-sys' onClick={handleDispenseClick} disabled={selectedOption === "Automatic"} style={{ backgroundColor: selectedOption === "Automatic" ? "gray" : "" }}>Dispense</button>
           </div>
+            </div>
+            
           <div className='metric-wrapper'>
             <div className='metric-cont'>
               <h1>Water Dispensed Today: {totalWaterDispensed}mL</h1>
             </div>
             <div className='metric-cont'>
-              <h1>Current Soil Moisture: {currentSoilMoisture}bar</h1>
+              <h1>Current Soil Moisture: {currentSoilMoisture}%</h1>
             </div>
             <div className='metric-cont'>
-              <h1>Current N, P, K Values: {currentNPK.nitrogen}, {currentNPK.phosphorus}, {currentNPK.potassium}</h1>
-            </div>
+              <h1>Current N, P, K Values: {selectedCrop === "Select Crop" ? 
+              `${currentNPK.nitrogen}, ${currentNPK.phosphorus}, ${currentNPK.potassium}` 
+              : 
+              (selectedCropData && 
+                <span>
+                  <span style={{color: currentNPK.nitrogen < selectedCropData.N ? "red" : (currentNPK.nitrogen >= selectedCropData.N ? "green" : "")}}>
+                    {selectedCropData ? currentNPK.nitrogen : 'N/A'}
+                  </span>
+                  {", "}
+                  <span style={{color: currentNPK.phosphorus < selectedCropData.P ? "red" : (currentNPK.phosphorus >= selectedCropData.P ? "green" : "")}}>
+                    {selectedCropData ? currentNPK.phosphorus : 'N/A'}
+                  </span>
+                  {", "}
+                  <span style={{color: currentNPK.potassium < selectedCropData.K ? "red" : (currentNPK.potassium >= selectedCropData.K ? "green" : "")}}>
+                    {selectedCropData ? currentNPK.potassium : 'N/A'}
+                  </span>
+                </span>
+              )
+            }
+            </h1>
+          </div>
           </div>
           <div className='metric-wrapper'>
             <div className='metric-cont'>
